@@ -23,6 +23,9 @@ steps:
         }
 
   - script: |
+    dir /s /b
+    displayName: "List Files in Directory (Debug Step)"
+  - script: |
       cd terraform  # Change directory to where .tf files exist
       terraform init
     displayName: "Initialize Terraform"
