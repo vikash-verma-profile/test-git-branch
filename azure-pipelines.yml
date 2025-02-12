@@ -5,14 +5,14 @@ pool:
   name: Self-Hosted
 
 steps:
-  # Ensure Terraform is Installed
+  # Ensure Terraform is Installed (Windows)
   - task: PowerShell@2
     displayName: "Ensure Terraform is Installed (Windows)"
-    condition: eq( variables['Agent.OS'], 'Windows_NT' )
+    condition: eq(variables['Agent.OS'], 'Windows_NT')
     inputs:
       targetType: 'inline'
       script: |
-        $terraform = terraform -version 2>$null
+        $terraform = Get-Command terraform -ErrorAction SilentlyContinue
         if ($terraform -eq $null) {
           Write-Host "Terraform not found. Installing..."
           Invoke-WebRequest -Uri "https://releases.hashicorp.com/terraform/1.6.0/terraform_1.6.0_windows_amd64.zip" -OutFile "terraform.zip"
@@ -28,24 +28,54 @@ steps:
       dir /s /b
     displayName: "List Files in Directory (Debug Step)"
 
-  # Azure CLI Login (Important for Terraform Authentication)
+  # Azure CLI Login (Windows)
+  - task: PowerShell@2
+    displayName: "Azure CLI Login (Windows)"
+    condition: eq(variables['Agent.OS'], 'Windows_NT')
+    inputs:
+      targetType: 'inline'
+      script: |
+        az login --service-principal -u $(ARM_CLIENT_ID) -p $(ARM_CLIENT_SECRET) --tenant $(ARM_TENANT_ID)
+
+  # Azure CLI Login (Linux & macOS)
   - script: |
       az login --service-principal -u $(ARM_CLIENT_ID) -p $(ARM_CLIENT_SECRET) --tenant $(ARM_TENANT_ID)
-    displayName: "Azure CLI Login"
+    displayName: "Azure CLI Login (Linux/macOS)"
+    condition: ne(variables['Agent.OS'], 'Windows_NT')
 
   # Initialize Terraform
-  - script: |
-      cd terraform
-      terraform init
+  - task: PowerShell@2
     displayName: "Initialize Terraform"
+    inputs:
+      targetType: 'inline'
+      script: |
+        cd terraform
+        terraform.exe init
 
   # Validate Terraform Configuration
-  - script: |
-      cd terraform
-      terraform validate
+  - task: PowerShell@2
     displayName: "Validate Terraform Code"
+    inputs:
+      targetType: 'inline'
+      script: |
+        cd terraform
+        terraform.exe validate
 
-  # Plan Terraform Changes with Variables Passed
+  # Plan Terraform Changes (Windows)
+  - task: PowerShell@2
+    displayName: "Plan Terraform Changes (Windows)"
+    condition: eq(variables['Agent.OS'], 'Windows_NT')
+    inputs:
+      targetType: 'inline'
+      script: |
+        cd terraform
+        terraform.exe plan -out=tfplan ^
+          -var "ARM_CLIENT_ID=$(ARM_CLIENT_ID)" ^
+          -var "ARM_CLIENT_SECRET=$(ARM_CLIENT_SECRET)" ^
+          -var "ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)" ^
+          -var "ARM_TENANT_ID=$(ARM_TENANT_ID)"
+
+  # Plan Terraform Changes (Linux/macOS)
   - script: |
       cd terraform
       terraform plan -out=tfplan \
@@ -53,9 +83,24 @@ steps:
         -var="ARM_CLIENT_SECRET=$(ARM_CLIENT_SECRET)" \
         -var="ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)" \
         -var="ARM_TENANT_ID=$(ARM_TENANT_ID)"
-    displayName: "Plan Terraform Changes"
+    displayName: "Plan Terraform Changes (Linux/macOS)"
+    condition: ne(variables['Agent.OS'], 'Windows_NT')
 
-  # Apply Terraform Changes
+  # Apply Terraform Changes (Windows)
+  - task: PowerShell@2
+    displayName: "Apply Terraform Changes (Windows)"
+    condition: eq(variables['Agent.OS'], 'Windows_NT')
+    inputs:
+      targetType: 'inline'
+      script: |
+        cd terraform
+        terraform.exe apply -auto-approve ^
+          -var "ARM_CLIENT_ID=$(ARM_CLIENT_ID)" ^
+          -var "ARM_CLIENT_SECRET=$(ARM_CLIENT_SECRET)" ^
+          -var "ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)" ^
+          -var "ARM_TENANT_ID=$(ARM_TENANT_ID)"
+
+  # Apply Terraform Changes (Linux/macOS)
   - script: |
       cd terraform
       terraform apply -auto-approve \
@@ -63,4 +108,5 @@ steps:
         -var="ARM_CLIENT_SECRET=$(ARM_CLIENT_SECRET)" \
         -var="ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)" \
         -var="ARM_TENANT_ID=$(ARM_TENANT_ID)"
-    displayName: "Apply Terraform Changes"
+    displayName: "Apply Terraform Changes (Linux/macOS)"
+    condition: ne(variables['Agent.OS'], 'Windows_NT')
