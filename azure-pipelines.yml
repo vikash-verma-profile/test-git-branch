@@ -49,8 +49,7 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-        cd terraform
-        terraform.exe init
+        terraform.exe init -chdir=terraform
 
   # Validate Terraform Configuration
   - task: PowerShell@2
@@ -58,8 +57,7 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-        cd terraform
-        terraform.exe validate
+        terraform.exe validate -chdir=terraform
 
   # Plan Terraform Changes (Windows)
   - task: PowerShell@2
@@ -68,17 +66,15 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-        cd terraform
-        terraform.exe plan -out=tfplan ^
-          -var "ARM_CLIENT_ID=$(ARM_CLIENT_ID)" ^
-          -var "ARM_CLIENT_SECRET=$(ARM_CLIENT_SECRET)" ^
-          -var "ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)" ^
+        terraform.exe plan -out=tfplan -chdir=terraform `
+          -var "ARM_CLIENT_ID=$(ARM_CLIENT_ID)" `
+          -var "ARM_CLIENT_SECRET=$(ARM_CLIENT_SECRET)" `
+          -var "ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)" `
           -var "ARM_TENANT_ID=$(ARM_TENANT_ID)"
 
   # Plan Terraform Changes (Linux/macOS)
   - script: |
-      cd terraform
-      terraform plan -out=tfplan \
+      terraform plan -out=tfplan -chdir=terraform \
         -var="ARM_CLIENT_ID=$(ARM_CLIENT_ID)" \
         -var="ARM_CLIENT_SECRET=$(ARM_CLIENT_SECRET)" \
         -var="ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)" \
@@ -93,17 +89,15 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-        cd terraform
-        terraform.exe apply -auto-approve ^
-          -var "ARM_CLIENT_ID=$(ARM_CLIENT_ID)" ^
-          -var "ARM_CLIENT_SECRET=$(ARM_CLIENT_SECRET)" ^
-          -var "ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)" ^
+        terraform.exe apply -auto-approve -chdir=terraform `
+          -var "ARM_CLIENT_ID=$(ARM_CLIENT_ID)" `
+          -var "ARM_CLIENT_SECRET=$(ARM_CLIENT_SECRET)" `
+          -var "ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)" `
           -var "ARM_TENANT_ID=$(ARM_TENANT_ID)"
 
   # Apply Terraform Changes (Linux/macOS)
   - script: |
-      cd terraform
-      terraform apply -auto-approve \
+      terraform apply -auto-approve -chdir=terraform \
         -var="ARM_CLIENT_ID=$(ARM_CLIENT_ID)" \
         -var="ARM_CLIENT_SECRET=$(ARM_CLIENT_SECRET)" \
         -var="ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)" \
