@@ -5,49 +5,62 @@ pool:
   name: Self-Hosted
 
 steps:
+  # Ensure Terraform is Installed
   - task: PowerShell@2
     displayName: "Ensure Terraform is Installed (Windows)"
     condition: eq( variables['Agent.OS'], 'Windows_NT' )
     inputs:
       targetType: 'inline'
       script: |
-        $terraform = Get-Command terraform -ErrorAction SilentlyContinue
-        if ($null -eq $terraform) {
+        $terraform = terraform -version 2>$null
+        if ($terraform -eq $null) {
           Write-Host "Terraform not found. Installing..."
           Invoke-WebRequest -Uri "https://releases.hashicorp.com/terraform/1.6.0/terraform_1.6.0_windows_amd64.zip" -OutFile "terraform.zip"
           Expand-Archive terraform.zip -DestinationPath "C:\terraform"
-          $env:Path += ";C:\terraform"
-          [System.Environment]::SetEnvironmentVariable("Path", $env:Path, [System.EnvironmentVariableTarget]::Machine)
+          [System.Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\terraform", [System.EnvironmentVariableTarget]::Machine)
           Write-Host "Terraform installed successfully."
         } else {
           Write-Host "Terraform is already installed."
         }
-        terraform -version
 
+  # Debugging: List files in the directory
   - script: |
-      echo "Current Directory:"
-      cd
-      echo "Listing all files:"
       dir /s /b
     displayName: "List Files in Directory (Debug Step)"
 
+  # Azure CLI Login (Important for Terraform Authentication)
   - script: |
-      dir /s /b
-    workingDirectory: terraform
-    displayName: "Verify Terraform Files Exist"
+      az login --service-principal -u $(ARM_CLIENT_ID) -p $(ARM_CLIENT_SECRET) --tenant $(ARM_TENANT_ID)
+    displayName: "Azure CLI Login"
 
-  - script: terraform init
-    workingDirectory: terraform
+  # Initialize Terraform
+  - script: |
+      cd terraform
+      terraform init
     displayName: "Initialize Terraform"
-  
-  - script: terraform validate
-    workingDirectory: terraform
+
+  # Validate Terraform Configuration
+  - script: |
+      cd terraform
+      terraform validate
     displayName: "Validate Terraform Code"
-  
-  - script: terraform plan -out=tfplan
-    workingDirectory: terraform
+
+  # Plan Terraform Changes with Variables Passed
+  - script: |
+      cd terraform
+      terraform plan -out=tfplan \
+        -var="ARM_CLIENT_ID=$(ARM_CLIENT_ID)" \
+        -var="ARM_CLIENT_SECRET=$(ARM_CLIENT_SECRET)" \
+        -var="ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)" \
+        -var="ARM_TENANT_ID=$(ARM_TENANT_ID)"
     displayName: "Plan Terraform Changes"
-  
-  - script: terraform apply -auto-approve
-    workingDirectory: terraform
+
+  # Apply Terraform Changes
+  - script: |
+      cd terraform
+      terraform apply -auto-approve \
+        -var="ARM_CLIENT_ID=$(ARM_CLIENT_ID)" \
+        -var="ARM_CLIENT_SECRET=$(ARM_CLIENT_SECRET)" \
+        -var="ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)" \
+        -var="ARM_TENANT_ID=$(ARM_TENANT_ID)"
     displayName: "Apply Terraform Changes"
