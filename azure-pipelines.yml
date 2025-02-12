@@ -5,13 +5,22 @@ pool:
   name: Self-Hosted
 
 steps:
-  - script: |
-      if ! command -v terraform &> /dev/null; then
-        curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-        sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-        sudo apt update && sudo apt install terraform -y
-      fi
-    displayName: "Ensure Terraform is Installed"
+  - task: PowerShell@2
+    displayName: "Ensure Terraform is Installed (Windows)"
+    condition: eq( variables['Agent.OS'], 'Windows_NT' )
+    inputs:
+      targetType: 'inline'
+      script: |
+        $terraform = terraform -version 2>$null
+        if ($terraform -eq $null) {
+          Write-Host "Terraform not found. Installing..."
+          Invoke-WebRequest -Uri "https://releases.hashicorp.com/terraform/1.6.0/terraform_1.6.0_windows_amd64.zip" -OutFile "terraform.zip"
+          Expand-Archive terraform.zip -DestinationPath "C:\terraform"
+          [System.Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\terraform", [System.EnvironmentVariableTarget]::Machine)
+          Write-Host "Terraform installed successfully."
+        } else {
+          Write-Host "Terraform is already installed."
+        }
 
   - script: |
       terraform init
