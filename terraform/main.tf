@@ -1,6 +1,10 @@
 provider "azurerm" {
   features {}
-  subscription_id = "af1fc9db-46ec-4432-a9a9-baecfdd29a96"
+
+  client_id       = var.ARM_CLIENT_ID
+  client_secret   = var.ARM_CLIENT_SECRET
+  subscription_id = var.ARM_SUBSCRIPTION_ID
+  tenant_id       = var.ARM_TENANT_ID
 }
 
 resource "azurerm_resource_group" "example" {
