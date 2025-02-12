@@ -23,17 +23,21 @@ steps:
         }
 
   - script: |
+      cd terraform  # Change directory to where .tf files exist
       terraform init
     displayName: "Initialize Terraform"
-
+  
   - script: |
+      cd terraform
       terraform validate
     displayName: "Validate Terraform Code"
-
+  
   - script: |
+      cd terraform
       terraform plan -out=tfplan
     displayName: "Plan Terraform Changes"
-
+  
   - script: |
+      cd terraform
       terraform apply -auto-approve
     displayName: "Apply Terraform Changes"
