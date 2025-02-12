@@ -11,36 +11,43 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-        $terraform = terraform -version 2>$null
-        if ($terraform -eq $null) {
+        $terraform = Get-Command terraform -ErrorAction SilentlyContinue
+        if ($null -eq $terraform) {
           Write-Host "Terraform not found. Installing..."
           Invoke-WebRequest -Uri "https://releases.hashicorp.com/terraform/1.6.0/terraform_1.6.0_windows_amd64.zip" -OutFile "terraform.zip"
           Expand-Archive terraform.zip -DestinationPath "C:\terraform"
-          [System.Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\terraform", [System.EnvironmentVariableTarget]::Machine)
+          $env:Path += ";C:\terraform"
+          [System.Environment]::SetEnvironmentVariable("Path", $env:Path, [System.EnvironmentVariableTarget]::Machine)
           Write-Host "Terraform installed successfully."
         } else {
           Write-Host "Terraform is already installed."
         }
+        terraform -version
 
   - script: |
-    dir /s /b
+      echo "Current Directory:"
+      cd
+      echo "Listing all files:"
+      dir /s /b
     displayName: "List Files in Directory (Debug Step)"
+
   - script: |
-      cd terraform  # Change directory to where .tf files exist
-      terraform init
+      dir /s /b
+    workingDirectory: terraform
+    displayName: "Verify Terraform Files Exist"
+
+  - script: terraform init
+    workingDirectory: terraform
     displayName: "Initialize Terraform"
   
-  - script: |
-      cd terraform
-      terraform validate
+  - script: terraform validate
+    workingDirectory: terraform
     displayName: "Validate Terraform Code"
   
-  - script: |
-      cd terraform
-      terraform plan -out=tfplan
+  - script: terraform plan -out=tfplan
+    workingDirectory: terraform
     displayName: "Plan Terraform Changes"
   
-  - script: |
-      cd terraform
-      terraform apply -auto-approve
+  - script: terraform apply -auto-approve
+    workingDirectory: terraform
     displayName: "Apply Terraform Changes"
