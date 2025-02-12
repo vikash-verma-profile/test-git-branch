@@ -1,0 +1,27 @@
+trigger:
+  - main
+
+pool:
+  name: Self-Hosted
+
+steps:
+  - task: TerraformInstaller@1
+    displayName: "Install Terraform"
+    inputs:
+      terraformVersion: 'latest'
+
+  - script: |
+      terraform init
+    displayName: "Initialize Terraform"
+
+  - script: |
+      terraform validate
+    displayName: "Validate Terraform Code"
+
+  - script: |
+      terraform plan -out=tfplan
+    displayName: "Plan Terraform Changes"
+
+  - script: |
+      terraform apply -auto-approve
+    displayName: "Apply Terraform Changes"
