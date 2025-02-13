@@ -11,17 +11,10 @@ variable "ARM_CLIENT_ID" {}
 variable "ARM_CLIENT_SECRET" {}
 variable "ARM_SUBSCRIPTION_ID" {}
 variable "ARM_TENANT_ID" {}
-variable "resource_group_name" {
-  description = "The name of the Azure Resource Group"
-  default     = "Terraform-RG"
-}
-
-variable "location" {
-  description = "The Azure region where resources will be deployed"
-}
 
 variable "backend_resource_group" {
   description = "The resource group where Terraform state storage is located"
+  default = "Backend-Terraform-RG"
 }
 
 variable "storage_account_name" {
