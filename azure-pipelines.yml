@@ -69,7 +69,7 @@ steps:
       targetType: 'inline'
       script: |
         cd terraform
-        terraform.exe plan -out=tfplan -chdir=terraform `
+        terraform.exe plan -out=tfplan  `
           -var "ARM_CLIENT_ID=$(ARM_CLIENT_ID)" `
           -var "ARM_CLIENT_SECRET=$(ARM_CLIENT_SECRET)" `
           -var "ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)" `
