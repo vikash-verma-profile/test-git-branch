@@ -92,7 +92,7 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-        terraform.exe apply -auto-approve -chdir=terraform `
+        terraform.exe apply -auto-approve `
           -var "ARM_CLIENT_ID=$(ARM_CLIENT_ID)" `
           -var "ARM_CLIENT_SECRET=$(ARM_CLIENT_SECRET)" `
           -var "ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)" `
