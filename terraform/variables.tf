@@ -14,20 +14,16 @@ variable "ARM_TENANT_ID" {}
 
 variable "backend_resource_group" {
   description = "The resource group where Terraform state storage is located"
-  default = "Backend-Terraform-RG"
 }
 
 variable "storage_account_name" {
   description = "The name of the Azure Storage Account for Terraform state"
-  default     = "your-storage-account-name"
 }
 
 variable "storage_container_name" {
   description = "The name of the container for storing Terraform state files"
-  default     = "tfstate"
 }
 
 variable "state_file_name" {
   description = "The name of the Terraform state file"
-  default     = "terraform.tfstate"
 }

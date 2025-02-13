@@ -1,2 +1,6 @@
 resource_group_name = "Terraform-RG"
 location           = "East US"
+backend_resource_group="Backend-Terraform-RG"
+storage_account_name="your-storage-account-name"
+storage_container_name="tfstate"
+state_file_name="terraform.tfstate"
