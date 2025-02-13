@@ -49,7 +49,8 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-        terraform.exe init -chdir=terraform
+        cd terraform
+        terraform validate
 
   # Validate Terraform Configuration
   - task: PowerShell@2
@@ -57,7 +58,8 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-        terraform.exe validate -chdir=terraform
+        cd terraform
+        terraform.exe validate
 
   # Plan Terraform Changes (Windows)
   - task: PowerShell@2
@@ -66,6 +68,7 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
+        cd terraform
         terraform.exe plan -out=tfplan -chdir=terraform `
           -var "ARM_CLIENT_ID=$(ARM_CLIENT_ID)" `
           -var "ARM_CLIENT_SECRET=$(ARM_CLIENT_SECRET)" `
