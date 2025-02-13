@@ -37,12 +37,6 @@ steps:
       script: |
         az login --service-principal -u $(ARM_CLIENT_ID) -p $(ARM_CLIENT_SECRET) --tenant $(ARM_TENANT_ID)
 
-  # Azure CLI Login (Linux & macOS)
-  - script: |
-      az login --service-principal -u $(ARM_CLIENT_ID) -p $(ARM_CLIENT_SECRET) --tenant $(ARM_TENANT_ID)
-    displayName: "Azure CLI Login (Linux/macOS)"
-    condition: ne(variables['Agent.OS'], 'Windows_NT')
-
   # Initialize Terraform
   - task: PowerShell@2
     displayName: "Initialize Terraform"
@@ -75,16 +69,6 @@ steps:
           -var "ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)" `
           -var "ARM_TENANT_ID=$(ARM_TENANT_ID)"
 
-  # Plan Terraform Changes (Linux/macOS)
-  - script: |
-      terraform plan -out=tfplan -chdir=terraform \
-        -var="ARM_CLIENT_ID=$(ARM_CLIENT_ID)" \
-        -var="ARM_CLIENT_SECRET=$(ARM_CLIENT_SECRET)" \
-        -var="ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)" \
-        -var="ARM_TENANT_ID=$(ARM_TENANT_ID)"
-    displayName: "Plan Terraform Changes (Linux/macOS)"
-    condition: ne(variables['Agent.OS'], 'Windows_NT')
-
   # Apply Terraform Changes (Windows)
   - task: PowerShell@2
     displayName: "Apply Terraform Changes (Windows)"
@@ -92,18 +76,9 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
+        cd terraform
         terraform.exe apply -auto-approve `
           -var "ARM_CLIENT_ID=$(ARM_CLIENT_ID)" `
           -var "ARM_CLIENT_SECRET=$(ARM_CLIENT_SECRET)" `
           -var "ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)" `
           -var "ARM_TENANT_ID=$(ARM_TENANT_ID)"
-
-  # Apply Terraform Changes (Linux/macOS)
-  - script: |
-      terraform apply -auto-approve -chdir=terraform \
-        -var="ARM_CLIENT_ID=$(ARM_CLIENT_ID)" \
-        -var="ARM_CLIENT_SECRET=$(ARM_CLIENT_SECRET)" \
-        -var="ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)" \
-        -var="ARM_TENANT_ID=$(ARM_TENANT_ID)"
-    displayName: "Apply Terraform Changes (Linux/macOS)"
-    condition: ne(variables['Agent.OS'], 'Windows_NT')
