@@ -27,9 +27,9 @@ resource "azurerm_resource_group" "example" {
 # Terraform Backend Configuration
 terraform {
   backend "azurerm" {
-    resource_group_name   = var.backend_resource_group
-    storage_account_name  = var.storage_account_name
-    container_name        = var.storage_container_name
-    key                   = var.state_file_name
+    resource_group_name   = "Backend-Terraform-RG"
+    storage_account_name  = "your-storage-account-name"
+    container_name        = "tfstate"
+    key                   = "terraform.tfstate"
   }
 }
