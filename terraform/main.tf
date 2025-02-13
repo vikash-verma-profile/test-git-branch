@@ -28,7 +28,7 @@ resource "azurerm_resource_group" "example" {
 terraform {
   backend "azurerm" {
     resource_group_name   = "Backend-Terraform-RG"
-    storage_account_name  = "your-storage-account-name"
+    storage_account_name  = "vikashbackendstorage"
     container_name        = "tfstate"
     key                   = "terraform.tfstate"
   }
