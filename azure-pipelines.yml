@@ -50,7 +50,7 @@ steps:
       targetType: 'inline'
       script: |
         cd terraform
-        terraform validate
+        terraform init 
 
   # Validate Terraform Configuration
   - task: PowerShell@2
